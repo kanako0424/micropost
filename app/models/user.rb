@@ -5,4 +5,9 @@ class User < ApplicationRecord
                     format: { with: /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i },
                     uniqueness: { case_sensitive: false }
   has_secure_password
+  
+  has_many :microposts
+  #User のインスタンスでインスタンスメソッド microposts が使えるようになります。
+  #使用例：user.microposts
+  #このmicropostsメソッドで、ある User が投稿した Microposts を全件取得することができます。
 end

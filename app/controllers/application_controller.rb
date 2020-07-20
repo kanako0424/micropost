@@ -12,4 +12,8 @@ class ApplicationController < ActionController::Base
     #unlessはfalseの時に実行する。
     #ApplicationControllerにメソッドを定義すると、全てのコントローラーに反映される。
   end
+  
+  def counts(user)
+    @count_microposts = user.microposts.count
+  end 
 end
