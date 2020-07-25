@@ -7,21 +7,24 @@ class User < ApplicationRecord
   has_secure_password
   
   has_many :microposts
-  #User のインスタンスでインスタンスメソッド microposts が使える。
+  #User のインスタンスでインスタンスメソッド microposts が使える
   #使用例：user.microposts
-  #このmicropostsメソッドで、ある User が投稿した Microposts を全件取得できる。
+  #このmicropostsメソッドで、ある User が投稿した Microposts を全件取得できる
   has_many :relationships
   #自分がフォローしているUserへの参照
   has_many :followings, through: :relationships, source: :follow
-  #followingモデルはないので、throughで付け足しをする。
+  #followingモデルはないので、throughで付け足しをする
   #relationshipsを中間テーブルとしている。
-  #中間テーブルの中のどのカラムを使うかを、source: :followで選択している。
+  #中間テーブルの中のどのカラムを使うかを、source: :followで選択している
   has_many :reverses_of_relationship, class_name: 'Relationship', foreign_key: 'follow_id'
   #自分をフォローしているUserへの参照
-  #User から Relationship を取得するとき、user_id が使用される。
-  #だから逆方向ではforeign_key: 'follow_id' と指定し、 user_id 側ではないことを明示。
+  #User から Relationship を取得するとき、user_id が使用される
+  #だから逆方向ではforeign_key: 'follow_id' と指定し、 user_id 側ではないことを明示
   has_many :followers, through: :reverses_of_relationship, source: :user
-  #user.followings と書いて該当の user がフォローしている User 達を取得するためにhas_many..., through:...を使う。
+  #user.followings と書いて該当の user がフォローしている User 達を取得するためにhas_many..., through:...を使う
+  
+  has_many :favorites #through: :favorites, source: :micropost_id
+  has_many :favs, through: :favorites, source: :micropost
   
   def follow(other_user)
     unless self == other_user
@@ -33,13 +36,27 @@ class User < ApplicationRecord
     relationship = self.relationships.find_by(follow_id: other_user.id)
     relationship.destroy if relationship
   end
-
+ 
   def following?(other_user)
     self.followings.include?(other_user)
   end
-  
+ 
   def feed_microposts
     Micropost.where(user_id: self.following_ids + [self.id])
     #following_ids は User モデルの has_many :followings, ... によって自動的に生成されるメソッド
   end
+  
+  def favorite(micropost)
+    self.favorites.find_or_create_by(micropost_id: micropost.id)
+  end
+  
+  def unfavorite(micropost)
+    favorite = self.favorites.find_by(micropost_id: micropost.id)
+    favorite.destroy if favorite
+  end
+  
+  def favorite?(micropost)
+    self.favs.include?(micropost)
+  end
+  
 end
